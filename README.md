@@ -1,4 +1,4 @@
-# Cylon.js API Plugin For Socket.io
+# Cylon.js API Plugin For MQTT
 
 API plugins were stripped from Cylon.js main module, to make everything more modular
 and at the same time make Cylon.js lighter, we now have two API plugins
