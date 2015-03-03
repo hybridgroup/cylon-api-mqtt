@@ -17,9 +17,17 @@ client.on('message', function (topic, data) {
 client.subscribe('/listen/api/robots');
 client.publish('/emit/api/robots');
 
-client.publish('/api/robots/cybot/devices');
-client.publish('/api/robots/cybot/events');
-client.publish('/api/robots/cybot/commands');
+client.subscribe('/listen/api/robots/cybot');
+client.publish('/emit/api/robots/cybot');
+
+client.subscribe('/listen/api/robots/cybot/devices');
+client.publish('/emit/api/robots/cybot/devices');
+
+client.subscribe('/listen/api/robots/cybot/events');
+client.publish('/emit/api/robots/cybot/events');
+
+client.subscribe('/listen/api/robots/cybot/commands');
+client.publish('/emit/api/robots/cybot/commands');
 
 var params = {
   param1: 'uno',

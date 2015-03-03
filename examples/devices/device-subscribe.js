@@ -17,9 +17,26 @@ client.on('message', function (topic, data) {
 client.subscribe('/listen/api/robots');
 client.publish('/emit/api/robots');
 
-client.publish('/api/robots/cybot/devices');
-client.publish('/api/robots/cybot/events');
-client.publish('/api/robots/cybot/commands');
+client.subscribe('/listen/api/robots/cybot');
+client.publish('/emit/api/robots/cybot');
+
+client.subscribe('/listen/api/robots/cybot/devices');
+client.publish('/emit/api/robots/cybot/devices');
+
+client.subscribe('/listen/api/robots/cybot/events');
+client.publish('/emit/api/robots/cybot/events');
+
+client.subscribe('/listen/api/robots/cybot/commands');
+client.publish('/emit/api/robots/cybot/commands');
+
+client.subscribe('/listen/api/robots/cybot/devices/led');
+client.publish('/emit/api/robots/cybot/devices/led');
+
+client.subscribe('/listen/api/robots/cybot/devices/led/events');
+client.publish('/emit/api/robots/cybot/devices/led/events');
+
+client.subscribe('/listen/api/robots/cybot/devices/led/commands');
+client.publish('/emit/api/robots/cybot/devices/led/commands');
 
 var params = {
   param1: 'uno',
@@ -34,11 +51,11 @@ var params = {
 // commands, methods or functions as regular params.
 params = JSON.stringify(params);
 
-client.subscribe('/listen/api/robots/cybot/toggle');
+client.subscribe('/listen/api/robots/cybot/devices/led/toggle');
 
 setInterval(function() {
   client.publish(
-    '/emit/api/robots/cybot/toggle',
+    '/emit/api/robots/cybot/devices/led/toggle',
     params);
 }, 2000);
 
