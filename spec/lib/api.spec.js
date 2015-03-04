@@ -41,6 +41,28 @@ describe('MQTT API', function() {
     });
   });
 
+  describe('#start', function() {
+    beforeEach(function() {
+      stub(api, 'createServer');
+      stub(api, 'listen');
+
+      api.start();
+    });
+
+    afterEach(function(){
+      api.createServer.restore();
+      api.listen.restore();
+    });
+
+    it('calls #createServer', function() {
+      expect(api.createServer).to.be.calledOnce;
+    });
+
+    it('calls #listen', function() {
+      expect(api.listen).to.be.calledOnce;
+    });
+  });
+
   describe('#createServer', function() {
     var res, next, ins;
 
@@ -123,12 +145,24 @@ describe('MQTT API', function() {
 
 
     describe('#express#use', function() {
+      beforeEach(function() {
+        res.status = spy();
+      });
+
       it('calls res#status with 500', function() {
+        ins.use.yields({ err: 500 }, res, next);
+        api.createServer();
         expect(res.status).to.be.calledWith(500);
       });
 
       it('calls res#json to be called with', function() {
         expect(res.json).to.be.calledWith({ error: 'An error occured.' });
+      });
+
+      it('calls res#next with status OK', function() {
+        ins.use.yields({ err: null }, res, next);
+        api.createServer();
+        expect(res.status).not.to.be.calledWith(500);
       });
     });
   });

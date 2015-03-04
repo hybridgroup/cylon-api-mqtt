@@ -216,60 +216,73 @@ describe('MqttMaster', function() {
       );
     });
   });
-/*
-  describe('#socketRobots', function() {
-    var callback, socket;
+
+  describe('#subscribeRobots', function() {
+    var client;
 
     beforeEach(function() {
-      callback = spy();
-
-      socket = {
-        on: stub()
+      client = {
+        publish: spy(),
+        subscribe: spy()
       };
 
-      socket.on.yields({ command: 'turn_on', args: [] });
-      stub(mm, '_socketItems');
-      spy(mm, '_addDefaultListeners');
+      mm.client = client;
 
-      mm.nsp = {
-        robots: {
-          emit: stub()
-        },
-        rosie: {
-          emit: stub()
-        }
-      };
+      stub(mm, 'on');
+      mm.on.yields();
 
-      mm._socketItems.yields(socket, 'rosie', mcp.robots.rosie);
+      stub(mm, '_subscribeItems');
+      mm._subscribeItems.yields('/api/robots/rosie', 'rosie', mcp.robots.rosie);
 
-      mm.socketRobots(mcp.robots);
+      stub(mm, '_addDefaultListeners');
+
+      mm.subscribeRobots();
     });
 
     afterEach(function() {
-      mm._socketItems.restore();
+      mm.on.restore();
+      mm._subscribeItems.restore();
       mm._addDefaultListeners.restore();
     });
 
-    it('calls #_socketItems', function() {
-      expect(mm._socketItems).to.be.calledWith(
-        '/api/robots/',
-        mcp.robots
-      );
-    });
-
-    it('adds a listener for "devices" to the socket', function() {
-      expect(socket.on).to.be.calledWith('devices');
+    it('calls #_subscribeItems with params', function() {
+      expect(mm._subscribeItems).to.be.calledWith('/api/robots/', mcp.robots);
     });
 
     it('calls #_addDefaultListeners', function() {
       expect(mm._addDefaultListeners).to.be.calledOnce;
       expect(mm._addDefaultListeners).to.be.calledWith(
-        socket,
-        'rosie'
+        '/api/robots/rosie',
+        'rosie',
+        mcp.robots.rosie
       );
+    });
+
+    it('calls #client.subscribe with', function() {
+      var topics = [
+        '/emit/api/robots/rosie',
+        '/emit/api/robots/rosie/devices'
+      ];
+      expect(mm.client.subscribe).to.be.calledWith(topics);
+    });
+
+    it('adds a new listener for robot and devices', function() {
+      expect(mm.on).to.be.calledWith('/emit/api/robots/rosie');
+      expect(mm.on).to.be.calledWith('/emit/api/robots/rosie/devices');
+    });
+
+    it('call @client#publish for robot and devices', function() {
+      var devs = Object.keys(mcp.robots.rosie.devices),
+          topicPrefix = '/listen/api/robots/rosie';
+
+      devs = JSON.stringify(devs);
+
+      expect(client.publish).to.be.calledWith(topicPrefix, devs);
+      expect(client.publish).to.be.calledWith(topicPrefix + '/devices', devs);
     });
   });
 
+/*
   describe('#socketDevices', function() {
     var callback, socket, asensor;
 
