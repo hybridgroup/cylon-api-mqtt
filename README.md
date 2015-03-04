@@ -2,7 +2,8 @@
 
 API plugins were stripped from Cylon.js main module, to make everything more modular
 and at the same time make Cylon.js lighter, we now have two API plugins
-for different protocols, the one in this repo `cylon-api-socketio` and
+for different protocols, the one in this repo `cylon-api-mqtt`,
+[cylon-api-socketio](http://github.com/hybridgroup/cylon-api-socketio) and
 [cylon-api-http](http://github.com/hybridgroup/cylon-api-http).
 
 Cylon.js (http://cylonjs.com) is a JavaScript framework for robotics, physical computing, and the Internet of Things using Node.js
@@ -13,8 +14,9 @@ For more information about Cylon, check out the repo at
 https://github.com/hybridgroup/cylon
 
 [![Build Status](https://travis-ci.org/hybridgroup/cylon-api-socketio.svg)](https://travis-ci.org/hybridgroup/cylon-api-socketio)
-[![Code Climate](https://codeclimate.com/github/hybridgroup/cylon-api-socketio/badges/gpa.svg)](https://codeclimate.com/github/hybridgroup/cylon-api-socketio)
-[![Test Coverage](https://codeclimate.com/github/hybridgroup/cylon-api-socketio/badges/coverage.svg)](https://codeclimate.com/github/hybridgroup/cylon-api-socketio)
+[![Code Climate](https://codeclimate.com/github/hybridgroup/cylon-api-mqtt/badges/gpa.svg)](https://codeclimate.com/github/hybridgroup/cylon-api-mqtt)
+[![Test Coverage](https://codeclimate.com/github/hybridgroup/cylon-api-mqtt/badges/coverage.svg)](https://codeclimate.com/github/hybridgroup/cylon-api-mqtt)
+
 
 ## How to install
 
