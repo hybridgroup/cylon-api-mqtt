@@ -282,6 +282,24 @@ describe('MqttMaster', function() {
     });
   });
 
+  describe('#subscribeDevices', function() {
+    beforeEach(function() {
+      stub(mm, '_subscribeItems');
+      mm.subscribeDevices(mcp.robots.rosie);
+    });
+
+    afterEach(function() {
+      mm._subscribeItems.restore();
+    });
+
+    it('calls #_subscribeItems with params', function() {
+      expect(mm._subscribeItems).to.be.calledWith(
+        '/api/robots/rosie/devices/',
+        mcp.robots.rosie.devices
+      );
+    });
+  });
+
 /*
   describe('#socketDevices', function() {
     var callback, socket, asensor;
