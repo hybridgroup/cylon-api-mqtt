@@ -26,10 +26,6 @@ global.source = function(module) {
   return require(path.normalize('./../lib/' + module));
 };
 
-var Cylon = require('cylon');
-
-Cylon.config({
-  logging: { logger: false }
-});
-
-Cylon.Logger.setup(false);
+global.support = function(module) {
+  return require('./support/' + module);
+};
