@@ -443,5 +443,28 @@ describe('MqttMaster', function() {
     it('subscribes to all robots topics', function() {
       expect(client.subscribe).to.be.calledWith(topics);
     });
+
+
+    context('robot with prefix', function(){
+      beforeEach(function() {
+        mm.ePrefix = '/123456/emit';
+        mm.lPrefix = '/123456/listen';
+
+        mm._addDefaultListeners('/api/robots/rosie', 'rosie', rosie);
+      });
+
+      it('adds to the beggining of the listener topic', function() {
+        expect(mm.on).to.be.calledWith(
+          '/123456/emit/api/robots/rosie/message'
+        );
+      });
+
+      it('adds to the beggining of the published topic', function() {
+        expect(client.publish).to.be.calledWith(
+          '/123456/listen/api/robots/rosie/message'
+        );
+      });
+    });
   });
+
 });
