@@ -23,7 +23,12 @@ describe('MqttMaster', function() {
           },
           commands: {
             turn_on: function() { return 1; }
-          }
+          },
+          events: [
+            'turned-on',
+            'turned-off'
+          ],
+          on: function() {}
         },
         thelma: {
           devices: {
@@ -300,125 +305,143 @@ describe('MqttMaster', function() {
     });
   });
 
-/*
-  describe('#socketDevices', function() {
-    var callback, socket, asensor;
+  describe('#_addDefaultListeners', function() {
+    var client, payload, rosie, topics;
+
+    topics = [
+      '/emit/api/robots/rosie/message',
+      '/emit/api/robots/rosie/commands',
+      '/emit/api/robots/rosie/events',
+      '/emit/api/robots/rosie/command',
+      '/emit/api/robots/rosie/turn_on'
+    ];
 
     beforeEach(function() {
-      callback = spy();
+      rosie = mcp.robots.rosie;
 
-      socket = {
-        on: stub()
+      payload = JSON.stringify({
+        command: 'turn_on',
+        args: ['param1', 'param2']
+      });
+
+      client = {
+        subscribe: stub(),
+        publish: stub()
       };
 
-      socket.on.yields({ command: 'turn_on', args: [] });
+      mm.client = client;
 
-      stub(mm, '_socketItems');
-      spy(mm, '_addDefaultListeners');
+      stub(mm, 'on');
+      mm.on.yields(payload);
 
-      mm.nsp = {
-        robots: {
-          emit: stub()
-        },
-        rosie: {
-          emit: stub()
-        },
-        led: {
-          emit: stub()
-        },
-      };
+      stub(rosie, 'on');
+      rosie.on.yields('value1', 'value2');
 
-      asensor = mcp.robots.rosie.devices.led;
-      asensor.on = stub();
-      asensor.on.yields();
+      stub(rosie.commands, 'turn_on');
+      rosie.commands.turn_on.returns(128);
 
-      mm._socketItems.yields(socket, 'led', mcp.robots.rosie.devices.led);
-
-      mm.socketDevices(mcp.robots.rosie);
+      mm._addDefaultListeners('/api/robots/rosie', 'rosie', rosie);
     });
 
     afterEach(function() {
-      mm._socketItems.restore();
-      mm._addDefaultListeners.restore();
+      mm.on.restore();
+      rosie.on.restore();
     });
 
-    it('calls #_socketItems', function() {
-      expect(mm._socketItems).to.be.calledWith(
-        '/api/robots/rosie/devices/',
-        mcp.robots.rosie.devices
+    it('adds a listener for /emit/api/robots/rosie/message', function() {
+      expect(mm.on).to.be.calledWith(
+        '/emit/api/robots/rosie/message'
       );
     });
 
-    it('adds a listener for "message" to the socket', function() {
-      expect(socket.on).to.be.calledWith('message');
-    });
-
-    it('emits "message" event', function() {
-      expect(mm.nsp.led.emit).to.be.calledWith('message');
-    });
-
-    it('adds a listener for "commands" to the socket', function() {
-      expect(socket.on).to.be.calledWith('commands');
-    });
-
-    it('emits "commands" event', function() {
-      expect(mm.nsp.led.emit).to.be.calledWith(
-        'commands',
-        ['turn_on']
+    it('publishes to topic /listen/api/robots/rosie/message', function() {
+      expect(client.publish).to.be.calledWith(
+        '/listen/api/robots/rosie/message',
+        payload
       );
     });
 
-    it('adds a listener for "events" to the socket', function() {
-      expect(socket.on).to.be.calledWith('events');
+    it('adds a listener for  /emit/api/robots/rosie/commands', function() {
+      expect(mm.on).to.be.calledWith('/emit/api/robots/rosie/commands');
     });
 
-    it('emits "events" event', function() {
-      expect(mm.nsp.led.emit).to.be.calledWith(
-        'events',
-        mcp.robots.rosie.devices.led.events
+    it('publishes to topic /listen/api/robots/rosie/commands', function() {
+      var keys = JSON.stringify(Object.keys(rosie.commands));
+      expect(client.publish).to.be.calledWith(
+        '/listen/api/robots/rosie/commands',
+        keys
       );
     });
 
-    it('adds a listener for "command" to the socket', function() {
-      expect(socket.on).to.be.calledWith('command');
+    it('adds a listener for /emit/api/robots/rosie/events', function() {
+      expect(mm.on).to.be.calledWith('/emit/api/robots/rosie/events');
     });
 
-    it('emits "events" event', function() {
-      expect(mm.nsp.led.emit).to.be.calledWith(
-        'command',
-        'turn_on',
-        1
+    it('publishes to topic /listen/api/robots/rosie/events', function() {
+      var keys = JSON.stringify(rosie.events);
+      expect(client.publish).to.be.calledWith(
+        '/listen/api/robots/rosie/events',
+        keys
       );
     });
 
-    it('adds a listener for "turn_on" to the socket', function() {
-      expect(socket.on).to.be.calledWith('turn_on');
+    it('adds a listener for /emit/api/robots/rosie/command', function() {
+      expect(mm.on).to.be.calledWith('/emit/api/robots/rosie/command');
     });
 
-    it('emits "events" event', function() {
-      expect(mm.nsp.led.emit).to.be.calledWith(
-        'turn_on',
-        1
+    it('calls the robot command', function() {
+      var params = JSON.parse(payload);
+      expect(rosie.commands.turn_on)
+        .to.be.calledWith(params.args[0], params.args[1]);
+    });
+
+    it('publishes to topic /listen/api/robots/rosie/command', function() {
+      expect(client.publish).to.be.calledWith(
+        '/listen/api/robots/rosie/command',
+        JSON.stringify({ command: 'turn_on',
+          returned: 128
+        })
       );
     });
 
-    it('adds a listener for "analogRead" to the device', function() {
-      expect(asensor.on).to.be.calledWith('analogRead');
+    it('adds a listener for /emit/api/robots/rosie/turn_on', function() {
+      expect(mm.on).to.be.calledWith('/emit/api/robots/rosie/turn_on');
     });
 
-    it('emits "events" event', function() {
-      expect(mm.nsp.led.emit).to.be.calledWith(
-        'analogRead'
+    it('calls the turn_on command', function() {
+      var params = JSON.parse(payload);
+      expect(rosie.commands.turn_on)
+        .to.be.calledWith(params.args[0], params.args[1]);
+    });
+
+    it('publishes to topic /listen/api/robots/rosie/command', function() {
+      expect(client.publish).to.be.calledWith(
+        '/listen/api/robots/rosie/turn_on',
+        JSON.stringify(128)
       );
     });
 
-    it('calls #_addDefaultListeners', function() {
-      expect(mm._addDefaultListeners).to.be.calledOnce;
-      expect(mm._addDefaultListeners).to.be.calledWith(
-        socket,
-        'led'
+    it('adds listeners to the robot for each event', function() {
+      expect(rosie.on).to.be.calledWith('turned-on');
+      expect(rosie.on).to.be.calledWith('turned-off');
+    });
+
+    it('publishes to topic /listen/api/robots/rosie/turn-on', function() {
+      expect(client.publish).to.be.calledWith(
+        '/listen/api/robots/rosie/turned-on',
+        JSON.stringify({ '0': 'value1', '1': 'value2' })
       );
+    });
+
+    it('publishes to topic /listen/api/robots/rosie/turn-off', function() {
+      expect(client.publish).to.be.calledWith(
+        '/listen/api/robots/rosie/turned-off',
+        JSON.stringify({ '0': 'value1', '1': 'value2' })
+      );
+    });
+
+    it('subscribes to all robots topics', function() {
+      expect(client.subscribe).to.be.calledWith(topics);
     });
   });
- */
 });

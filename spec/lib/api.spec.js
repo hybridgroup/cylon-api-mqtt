@@ -4,7 +4,6 @@
 var API = source('api');
 
 var http = require('http');
-// var SocketMaster = require('../../lib/socket-master.js');
 
 describe('MQTT API', function() {
   var api;
