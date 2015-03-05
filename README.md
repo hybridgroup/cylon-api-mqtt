@@ -8,7 +8,7 @@ for different protocols, the one in this repo `cylon-api-mqtt`,
 
 Cylon.js (http://cylonjs.com) is a JavaScript framework for robotics, physical computing, and the Internet of Things using Node.js
 
-This repository contains the Cylon API plugin for Socket.io
+This repository contains the Cylon API plugin for MQTT.
 
 For more information about Cylon, check out the repo at
 https://github.com/hybridgroup/cylon
@@ -21,21 +21,21 @@ https://github.com/hybridgroup/cylon
 ## How to install
 
 ```bash
-$ npm install cylon-api-socketio
+$ npm install cylon-api-mqtt
 ```
 
 ## How to use
 
-Make sure you have Cylon.js installed, then we can add Socket.io support to cylon
+Make sure you have Cylon.js installed, then we can add MQTT support to cylon
 programs as follows:
 
 ```javascript
-"use strict";
+'use strict';
 
-var Cylon = require("cylon");
+var Cylon = require('cylon');
 
 Cylon.robot({
-  name: 'rosie',
+  name: 'cybot',
 
   connections: {
     arduino: { adaptor: 'firmata', port: '/dev/ttyACM0' }
@@ -47,20 +47,19 @@ Cylon.robot({
 
   work: function() {
     // Add your robot code here,
-    // for this example with sockets
-    // we are going to be interacting
-    // with the robot using the code in
-    // ./analog-read-client.html.
+    // for this simple blink example
+    // we'll interacting with the
+    // robot through the 'led' device.
   }
 });
 
 // ensure you install the API plugin first:
 // $ npm install cylon-api-socket-io
 Cylon.api(
-  'socketio',
+  'mqtt',
   {
-  host: "0.0.0.0",
-  port: "3000"
+  broker: 'mqtt://test.mosquitto.org',
+  prefix: 'cybot', // Optional
 });
 
 Cylon.start();
@@ -69,90 +68,34 @@ Cylon.start();
 ## How to Connect
 
 Once you have added the api to your Cylon.js code, and your robots are up and running, you can connect
-to them using Socket.io through cylon using the following code:
+using MQTT, you need to subscribe to the topics you want to receive info for and publish the ones that
+execute commands in your robot.
 
-```html
-<!doctype html>
-<html>
-  <head>
-    <title>Socket.IO chat</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-    </style>
-  </head>
-  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-  <script type="text/javascript">
-    var cylon, robot, device;
+```javascript
+'use strict';
 
-    window.onload = function() {
-      if (!device) {
-        // Since we already know which device we want to connect to,
-        // we create a new socket for the `led` device.
-        device = io('http://127.0.0.1/api/robots/rosie/devices/led');
+var mqtt    = require('mqtt');
+var client  = mqtt.connect('mqtt://test.mosquitto.org');
 
-        // Listen to the 'message' event on device
-        device.on('message', function(msg) {
-          $('#messages').append($('<li>').text(msg));
-        });
+client.on('message', function (topic, data) {
+  data = (!!data) ? JSON.parse(data) : data;
 
-        // Listen to the 'commands' event on device
-        // returns a list of available commands for the device,
-        // you need to first send a 'commands' event down
-        // the socket, so it knows to trigger this event
-        // with the list of commands.
-        device.on('commands', function(commands) {
-          var msg = 'commands:' + commands.toString();
-          console.log('commands ==>', commands);
-          $('#messages').append($('<li>').text(msg));
-        });
+  console.log('topic ==>', topic.toString());
+  console.log('payload ==>', data);
+});
 
-        // Every time a command is executed the 'command' event
-        // is triggered, returns the name of the command executed
-        // and the value returned by the method the command calls.
-        device.on('command', function(command, value) {
-          console.log('command name ==>', command);
-          console.log('command returned ==>', value);
-        });
+client.subscribe('/cybot/listen/api/robots');
+client.publish('/cybot/emit/api/robots');
 
-        // Listen to the 'events' event on device
-        // returns a list of available events for the device,
-        // same as with commands you need to emit a 'events'
-        // event first.
-        device.on('events', function(events) {
-          var msg = 'events:' + events.toString();
-          console.log('events ==>', events);
-          $('#messages').append($('<li>').text(msg));
-        });
+client.subscribe('/cybot/listen/api/robots/cybot/devices/led/toggle');
 
-        // We emit 'commands' and 'events' so we can listen
-        // and get the lists of available items.
-        device.emit('commands');
-        device.emit('events');
+setInterval(function() {
+  client.publish(
+    '/cybot/emit/api/robots/cybot/devices/led/toggle',
+    JSON.stringify({ param1: 'uno' }));
+}, 2000);
 
-        // The "hello world" program of robotics, the
-        // blink and LED program, we just emit the command
-        // we want our device to execute.
-        setInterval(function() {
-          device.emit('toggle');
-        }, 1000);
-      }
-    };
-  </script>
-  <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
-  </body>
-</html>
+//client.end();
 ```
 
 ## Documentation
@@ -176,16 +119,6 @@ Thank you!
   * For git help see [progit](http://git-scm.com/book) which is an awesome (and free) book on git
 
 ## Release History
-
-0.2.4 - Fix issue with npm module release
-
-0.2.3 - Changes for latest Cylon release v0.22.1
-
-0.2.2 - Fixes api.server.listen undefined issue
-
-0.2.1 - Update examples to fix an issue with CORS
-
-0.2.0 - Add support for robot commands and events
 
 0.1.0 - Initial release
 
