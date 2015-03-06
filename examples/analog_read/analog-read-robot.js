@@ -10,15 +10,12 @@ Cylon.robot({
   },
 
   devices: {
-    led: { driver: 'led', pin: 13 }
+    sensor: { driver: 'analog-sensor', pin: 0 }
   },
 
   work: function() {
-    // Add your robot code here,
-    // for this simple blink example
-    // we'll interacting with the
-    // robot through the 'led' device.
-  }
+    // Add your robot code here
+  },
 });
 
 // ensure you install the API plugin first:
@@ -26,8 +23,10 @@ Cylon.robot({
 Cylon.api(
   'mqtt',
   {
-  broker: 'mqtt://test.mosquitto.org',
-  prefix: 'cybot', // Optional
-});
+    broker: 'mqtt://test.mosquitto.org',
+    port: '3000',
+    prefix: 'cybot'
+  }
+);
 
 Cylon.start();
