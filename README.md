@@ -18,13 +18,13 @@ https://github.com/hybridgroup/cylon
 [![Test Coverage](https://codeclimate.com/github/hybridgroup/cylon-api-mqtt/badges/coverage.svg)](https://codeclimate.com/github/hybridgroup/cylon-api-mqtt)
 
 
-## How to install
+## How to Install
 
 ```bash
 $ npm install cylon-api-mqtt
 ```
 
-## How to use
+## How to Use
 
 Make sure you have Cylon.js installed, then we can add MQTT support to cylon
 programs as follows:
