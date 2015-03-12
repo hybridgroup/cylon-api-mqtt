@@ -11,7 +11,7 @@ client.on('message', function (topic, payload) {
   var data, sender;
 
   if (!!payload && (payload.length > 0)) {
-    data = JSON.parse(data);
+    data = JSON.parse(payload);
     sender = data.sender;
   }
 
