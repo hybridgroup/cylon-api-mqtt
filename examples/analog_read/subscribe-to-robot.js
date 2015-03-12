@@ -3,22 +3,40 @@
 var mqtt    = require('mqtt');
 var client  = mqtt.connect('mqtt://test.mosquitto.org');
 
-client.on('message', function (topic, data) {
-  data = (!!data) ? JSON.parse(data) : data;
+client.on('message', function (topic, payload) {
+  // MQTT only receives and sends message payload as
+  // string or buffer, so we need to parse the JSON string
+  // send by Cylon, this way we can access it as a regular
+  // JS object.
+  var data, sender;
 
-  console.log('topic ==>', topic.toString());
-  console.log('payload ==>', data);
+  if (!!payload && (payload.length > 0)) {
+    data = JSON.parse(data);
+    sender = data.sender;
+  }
+
+  if (sender !== 'self') {
+    console.log('Topic name ==>', topic);
+    console.log('Payload ==>', data);
+  }
 });
 
-client.subscribe('/cybot/listen/api/robots');
-client.publish('/cybot/emit/api/robots');
+// Payload needs to be a JSON string
+var payload = JSON.stringify({
+  sender: 'self',
+  param1: 'uno'
+});
 
-client.subscribe('/cybot/listen/api/robots/cybot/devices');
-client.publish('/cybot/emit/api/robots/cybot/devices');
 
-client.subscribe('/cybot/listen/api/robots/cybot/devices/sensor/events');
-client.publish('/cybot/emit/api/robots/cybot/devices/sensor/events');
+client.subscribe('/cybot/api/robots');
+client.publish('/cybot/api/robots', payload);
 
-client.subscribe('/cybot/listen/api/robots/cybot/devices/sensor/analogRead');
+client.subscribe('/cybot/api/robots/cybot/devices');
+client.publish('/cybot/api/robots/cybot/devices', payload);
+
+client.subscribe('/cybot/api/robots/cybot/devices/sensor/events');
+client.publish('/cybot/api/robots/cybot/devices/sensor/events', payload);
+
+client.subscribe('/cybot/api/robots/cybot/devices/sensor/analogRead');
 
 //client.end();
