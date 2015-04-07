@@ -65,11 +65,11 @@ var params = {
 // commands, methods or functions as regular params.
 payload = JSON.stringify(params);
 
-client.subscribe('/listen/api/robots/cybot/devices/led/toggle');
+client.subscribe('/api/robots/cybot/devices/led/toggle');
 
 setInterval(function() {
   client.publish(
-    '/emit/api/robots/cybot/devices/led/toggle',
+    '/api/robots/cybot/devices/led/toggle',
     payload);
 }, 2000);
 

@@ -55,11 +55,11 @@ var params = {
 
 payload = JSON.stringify(params);
 
-client.subscribe('/listen/api/robots/cybot/toggle');
+client.subscribe('/api/robots/cybot/toggle');
 
 setInterval(function() {
   client.publish(
-    '/emit/api/robots/cybot/toggle',
+    '/api/robots/cybot/toggle',
     payload);
 }, 2000);
 

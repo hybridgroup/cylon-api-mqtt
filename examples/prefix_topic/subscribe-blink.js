@@ -30,11 +30,11 @@ var payload = JSON.stringify({
 client.subscribe('/cybot/api/robots');
 client.publish('/cybot/api/robots', payload);
 
-client.subscribe('/cybot/listen/api/robots/cybot/devices/led/toggle');
+client.subscribe('/cybot/api/robots/cybot/devices/led/toggle');
 
 setInterval(function() {
   client.publish(
-    '/cybot/emit/api/robots/cybot/devices/led/toggle',
+    '/cybot/api/robots/cybot/devices/led/toggle',
     payload);
 }, 2000);
 
