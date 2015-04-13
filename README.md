@@ -120,6 +120,8 @@ Thank you!
 
 ## Release History
 
+0.1.4 - Remove express dependency
+
 0.1.3 - Fix incorrect topic route in examples
 
 0.1.2 - Change route to remove emit and listen prefix, adds sender param to payload
