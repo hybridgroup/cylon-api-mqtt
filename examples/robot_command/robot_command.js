@@ -21,30 +21,6 @@ client.on('message', function (topic, payload) {
   }
 });
 
-var payload = JSON.stringify({
-  sender: 'self'
-});
-
-// get list of all robots
-client.subscribe('/api/robots');
-client.publish('/api/robots', payload);
-
-// get info about robot named 'cybot'
-client.subscribe('/api/robots/cybot');
-client.publish('/api/robots/cybot', payload);
-
-// get list of devices for robot named 'cybot'
-client.subscribe('/api/robots/cybot/devices');
-client.publish('/api/robots/cybot/devices', payload);
-
-// get list of events for robot named 'cybot'
-client.subscribe('/api/robots/cybot/events');
-client.publish('/api/robots/cybot/events', payload);
-
-// get list of commands for robot named 'cybot'
-client.subscribe('/api/robots/cybot/commands');
-client.publish('/api/robots/cybot/commands', payload);
-
 // In order to be able to pass params to the commands
 // we need to convert them to json, since MQTT only
 // accepts strings and buffers as the paylod.

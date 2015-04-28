@@ -1,14 +1,10 @@
 # Cylon.js API Plugin For MQTT
 
-API plugins were stripped from Cylon.js main module, to make everything more modular
-and at the same time make Cylon.js lighter, we now have two API plugins
-for different protocols, the one in this repo `cylon-api-mqtt`,
-[cylon-api-socketio](http://github.com/hybridgroup/cylon-api-socketio) and
-[cylon-api-http](http://github.com/hybridgroup/cylon-api-http).
-
 Cylon.js (http://cylonjs.com) is a JavaScript framework for robotics, physical computing, and the Internet of Things using Node.js
 
-This repository contains the Cylon API plugin for MQTT.
+API plugins are separate from the Cylon.js main module, to make everything more modular and at the same time make Cylon.js lighter.
+
+This repository contains the Cylon API plugin for the MQTT (http://mqtt.org) machine to machine messaging system.
 
 For more information about Cylon, check out the repo at
 https://github.com/hybridgroup/cylon
@@ -59,7 +55,7 @@ Cylon.api(
   'mqtt',
   {
   broker: 'mqtt://test.mosquitto.org',
-  prefix: 'cybot', // Optional
+  port: '3000'
 });
 
 Cylon.start();
@@ -67,9 +63,7 @@ Cylon.start();
 
 ## How to Connect
 
-Once you have added the api to your Cylon.js code, and your robots are up and running, you can connect
-using MQTT, you need to subscribe to the topics you want to receive info for and publish the ones that
-execute commands in your robot.
+Once you have added the api to your Cylon.js code, and your robots are up and running, you can connect using MQTT, you need to subscribe to the topics you want to receive info for and publish the ones that execute commands in your robot.
 
 ```javascript
 'use strict';
@@ -77,25 +71,37 @@ execute commands in your robot.
 var mqtt    = require('mqtt');
 var client  = mqtt.connect('mqtt://test.mosquitto.org');
 
-client.on('message', function (topic, data) {
-  data = (!!data) ? JSON.parse(data) : data;
+client.on('message', function (topic, payload) {
+  var data, sender;
 
-  console.log('topic ==>', topic.toString());
-  console.log('payload ==>', data);
+  if (!!payload && (payload.length > 0)) {
+    data = JSON.parse(payload);
+    sender = data.sender;
+  }
+
+  if (sender !== 'self') {
+    console.log('Topic name ==>', topic);
+    console.log('Payload ==>', data);
+  }
 });
 
-client.subscribe('/cybot/listen/api/robots');
-client.publish('/cybot/emit/api/robots');
+var params = {
+  sender: 'self',
+  args: ['param1', 'param2', 'param3']
+};
 
-client.subscribe('/cybot/listen/api/robots/cybot/devices/led/toggle');
+// Payload needs to be a JSON string
+var payload = JSON.stringify(params);
+
+// get messages from the robot-level command `toggle`
+client.subscribe('/api/robots/cybot/toggle');
 
 setInterval(function() {
+  // call robot-level command `toggle`
   client.publish(
-    '/cybot/emit/api/robots/cybot/devices/led/toggle',
-    JSON.stringify({ param1: 'uno' }));
+    '/api/robots/cybot/toggle',
+    payload);
 }, 2000);
-
-//client.end();
 ```
 
 ## Documentation
