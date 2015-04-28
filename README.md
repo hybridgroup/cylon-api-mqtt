@@ -60,10 +60,13 @@ Cylon.api(
 
 Cylon.start();
 ```
-
 ## How to Connect
 
-Once you have added the api to your Cylon.js code, and your robots are up and running, you can connect using MQTT, you need to subscribe to the topics you want to receive info for and publish the ones that execute commands in your robot.
+Once you have added the api to your Cylon.js code, and your robots are up and running, you can communicate with it using the MQTT broker.
+
+You send commands to the robot by publishing MQTT messages to the broker intended for that robot using an MQTT topic matching the CPPP.IO (http://cppp.io) based route.
+
+You subscribe to events from that robot, again by using the correct MQTT topic matching the CPPP.IO (http://cppp.io) based route.
 
 ```javascript
 'use strict';
@@ -93,7 +96,7 @@ var params = {
 // Payload needs to be a JSON string
 var payload = JSON.stringify(params);
 
-// get messages from the robot-level command `toggle`
+// get response messages from the robot-level command `toggle`
 client.subscribe('/api/robots/cybot/toggle');
 
 setInterval(function() {
@@ -103,6 +106,7 @@ setInterval(function() {
     payload);
 }, 2000);
 ```
+You can also send commands or subscribe to event directly on any robot's devices. Take a look at the examples folder for more samples.
 
 ## Documentation
 
