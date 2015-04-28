@@ -4,7 +4,7 @@ Cylon.js (http://cylonjs.com) is a JavaScript framework for robotics, physical c
 
 API plugins are separate from the Cylon.js main module, to make everything more modular and at the same time make Cylon.js lighter.
 
-This repository contains the Cylon API plugin for the MQTT (http://mqtt.org) machine to machine messaging system.
+This repository contains the Cylon API plugin for the MQTT (http://mqtt.org) machine to machine messaging system. The implementation uses the [mqtt node module](https://github.com/mqttjs/MQTT.js) maintained by [@adamvr](https://github.com/adamvr) and [@mcollina](https://github.com/mcollina) thank you!
 
 For more information about Cylon, check out the repo at
 https://github.com/hybridgroup/cylon
@@ -106,7 +106,7 @@ setInterval(function() {
     payload);
 }, 2000);
 ```
-You can also send commands or subscribe to event directly on any robot's devices. Take a look at the examples folder for more samples.
+You can also send commands or subscribe to events directly on any robot's devices. Take a look at the examples folder for more samples.
 
 ## Documentation
 
