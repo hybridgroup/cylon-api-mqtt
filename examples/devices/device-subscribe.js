@@ -27,27 +27,19 @@ var payload = JSON.stringify({
   param1: 'uno'
 });
 
-client.subscribe('/api/robots');
-client.publish('/api/robots', payload);
-
-client.subscribe('/api/robots/cybot');
-client.publish('/api/robots/cybot', payload);
-
+// get list of all devices for robot 'cybot'
 client.subscribe('/api/robots/cybot/devices');
 client.publish('/api/robots/cybot/devices', payload);
 
-client.subscribe('/api/robots/cybot/events');
-client.publish('/api/robots/cybot/events', payload);
-
-client.subscribe('/api/robots/cybot/commands');
-client.publish('/api/robots/cybot/commands', payload);
-
+// get info for 'led' device of robot 'cybot'
 client.subscribe('/api/robots/cybot/devices/led');
 client.publish('/api/robots/cybot/devices/led', payload);
 
+// get events for 'led' device of robot 'cybot'
 client.subscribe('/api/robots/cybot/devices/led/events');
 client.publish('/api/robots/cybot/devices/led/events', payload);
 
+// get commands for 'led' device of robot 'cybot'
 client.subscribe('/api/robots/cybot/devices/led/commands');
 client.publish('/api/robots/cybot/devices/led/commands', payload);
 
@@ -65,12 +57,12 @@ var params = {
 // commands, methods or functions as regular params.
 payload = JSON.stringify(params);
 
+// get messages from the robot 'cybot' device 'led' command `toggle`
 client.subscribe('/api/robots/cybot/devices/led/toggle');
 
 setInterval(function() {
+  // send 'toggle' command to the robot 'cybot' device 'led'
   client.publish(
     '/api/robots/cybot/devices/led/toggle',
     payload);
 }, 2000);
-
-//client.end();
