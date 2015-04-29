@@ -27,7 +27,7 @@ Cylon.api(
   'mqtt',
   {
   broker: 'mqtt://test.mosquitto.org',
-  prefix: 'cybot', // Optional
+  prefix: 'myappname', // Optional
 });
 
 Cylon.start();

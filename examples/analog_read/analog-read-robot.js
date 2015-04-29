@@ -24,8 +24,7 @@ Cylon.api(
   'mqtt',
   {
     broker: 'mqtt://test.mosquitto.org',
-    port: '3000',
-    prefix: 'cybot'
+    port: '3000'
   }
 );
 

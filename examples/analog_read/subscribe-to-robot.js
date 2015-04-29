@@ -21,22 +21,5 @@ client.on('message', function (topic, payload) {
   }
 });
 
-// Payload needs to be a JSON string
-var payload = JSON.stringify({
-  sender: 'self',
-  param1: 'uno'
-});
-
-
-client.subscribe('/cybot/api/robots');
-client.publish('/cybot/api/robots', payload);
-
-client.subscribe('/cybot/api/robots/cybot/devices');
-client.publish('/cybot/api/robots/cybot/devices', payload);
-
-client.subscribe('/cybot/api/robots/cybot/devices/sensor/events');
-client.publish('/cybot/api/robots/cybot/devices/sensor/events', payload);
-
-client.subscribe('/cybot/api/robots/cybot/devices/sensor/analogRead');
-
-//client.end();
+// get 'analogRead' events for 'sensor' device of robot 'cybot'
+client.subscribe('/api/robots/cybot/devices/sensor/analogRead');

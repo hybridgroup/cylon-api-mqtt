@@ -27,15 +27,18 @@ var payload = JSON.stringify({
   param1: 'uno'
 });
 
-client.subscribe('/cybot/api/robots');
-client.publish('/cybot/api/robots', payload);
+// get list of all robots
+client.subscribe('/myappname/api/robots');
+client.publish('/myappname/api/robots', payload);
 
-client.subscribe('/cybot/api/robots/cybot/devices/led/toggle');
+// get messages from the robot 'cybot' device 'led' command `toggle`, 
+// with the prefix 'myappname'
+client.subscribe('/myappname/api/robots/cybot/devices/led/toggle');
 
 setInterval(function() {
+  // send 'toggle' command to the robot 'cybot' device 'led'
+  // with the prefix 'myappname'
   client.publish(
-    '/cybot/api/robots/cybot/devices/led/toggle',
+    '/myappname/api/robots/cybot/devices/led/toggle',
     payload);
 }, 2000);
-
-//client.end();
