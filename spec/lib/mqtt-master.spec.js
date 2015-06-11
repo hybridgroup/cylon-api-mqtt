@@ -1,7 +1,6 @@
- /* jshint expr:true */
 'use strict';
 
-var MqttMaster = source('mqtt-master');
+var MqttMaster = lib('mqtt-master');
 
 var mqtt = require('mqtt');
 
@@ -172,11 +171,9 @@ describe('MqttMaster', function() {
   });
 
   describe('#subscribeMCP', function() {
-    var callback, client;
+    var client;
 
     beforeEach(function() {
-      callback = spy();
-
       client = {
         publish: spy(),
         subscribe: spy()
@@ -218,7 +215,7 @@ describe('MqttMaster', function() {
       expect(client.publish).to.be.calledWith(
         '/api/robots',
         JSON.stringify({
-          robots: ['rosie','thelma'],
+          robots: ['rosie', 'thelma'],
           sender: null
         })
       );
@@ -358,14 +355,14 @@ describe('MqttMaster', function() {
     });
 
     it('publishes to topic /api/robots/rosie/message', function() {
-      var payload = JSON.stringify({
+      var data = JSON.stringify({
         data: { command: 'turn_on', args: ['param1', 'param2'] },
-        sender:null
+        sender: null
       });
 
       expect(client.publish).to.be.calledWith(
         '/api/robots/rosie/message',
-        payload
+        data
       );
     });
 
@@ -374,14 +371,14 @@ describe('MqttMaster', function() {
     });
 
     it('publishes to topic /api/robots/rosie/commands', function() {
-      var payload = JSON.stringify({
+      var data = JSON.stringify({
         commands: ['turn_on'],
-        sender:null
+        sender: null
       });
 
       expect(client.publish).to.be.calledWith(
         '/api/robots/rosie/commands',
-        payload
+        data
       );
     });
 
@@ -390,13 +387,14 @@ describe('MqttMaster', function() {
     });
 
     it('publishes to topic /api/robots/rosie/events', function() {
-      var payload = JSON.stringify({
-            events: ['turned-on', 'turned-off'],
-            sender:null
+      var data = JSON.stringify({
+        events: ['turned-on', 'turned-off'],
+        sender: null
       });
+
       expect(client.publish).to.be.calledWith(
         '/api/robots/rosie/events',
-        payload
+        data
       );
     });
 
@@ -414,9 +412,9 @@ describe('MqttMaster', function() {
       expect(client.publish).to.be.calledWith(
         '/api/robots/rosie/command',
         JSON.stringify({
-          'command':'turn_on',
-          'returned':128,
-          'sender':null
+          command: 'turn_on',
+          returned: 128,
+          sender: null
         })
       );
     });
@@ -435,7 +433,7 @@ describe('MqttMaster', function() {
       expect(client.publish).to.be.calledWith(
         '/api/robots/rosie/turn_on',
         JSON.stringify(
-          {'returned':128,'sender':null}
+          { returned: 128, sender: null }
         )
       );
     });
@@ -449,8 +447,8 @@ describe('MqttMaster', function() {
       expect(client.publish).to.be.calledWith(
         '/api/robots/rosie/turned-on',
         JSON.stringify({
-          'arguments':{'0':'value1','1':'value2'},
-          'sender':null
+          arguments: { 0: 'value1', 1: 'value2' },
+          sender: null
         })
       );
     });
@@ -459,8 +457,8 @@ describe('MqttMaster', function() {
       expect(client.publish).to.be.calledWith(
         '/api/robots/rosie/turned-off',
         JSON.stringify({
-          'arguments':{'0':'value1','1':'value2'},
-          'sender':null
+          arguments: { 0: 'value1', 1: 'value2' },
+          sender: null
         })
       );
     });
@@ -470,7 +468,7 @@ describe('MqttMaster', function() {
     });
 
 
-    context('robot with prefix', function(){
+    context('robot with prefix', function() {
       beforeEach(function() {
         mm.prefix = '/123456';
 
@@ -490,5 +488,4 @@ describe('MqttMaster', function() {
       });
     });
   });
-
 });

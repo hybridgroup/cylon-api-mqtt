@@ -1,7 +1,6 @@
-/* jshint expr:true */
 'use strict';
 
-var API = source('api');
+var API = lib('api');
 
 describe('MQTT API', function() {
   var api;
@@ -33,8 +32,8 @@ describe('MQTT API', function() {
     });
 
     it('sets opts to an {} if null is passed', function() {
-      var api = new API();
-      expect(api.mcp).to.be.undefined();
+      var instance = new API();
+      expect(instance.mcp).to.be.undefined();
     });
   });
 
@@ -45,7 +44,7 @@ describe('MQTT API', function() {
       api.start();
     });
 
-    afterEach(function(){
+    afterEach(function() {
       api.createServer.restore();
     });
 
