@@ -9,4 +9,4 @@ before_script:
 
 script:
   - make ci
-  - CODECLIMATE_REPO_TOKEN=1d1202f04ddb4de3d18cabdd150242b5db30a627d77ad257e8f78dc9c38859ee codeclimate < coverage/lcov.info
+  - CODECLIMATE_REPO_TOKEN=1d1202f04ddb4de3d18cabdd150242b5db30a627d77ad257e8f78dc9c38859ee codeclimate-test-reporter < coverage/lcov.info
