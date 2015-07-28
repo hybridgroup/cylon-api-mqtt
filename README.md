@@ -50,7 +50,7 @@ Cylon.robot({
 });
 
 // ensure you install the API plugin first:
-// $ npm install cylon-api-socket-io
+// $ npm install cylon-api-mqtt
 Cylon.api(
   'mqtt',
   {
