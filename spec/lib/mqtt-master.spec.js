@@ -42,7 +42,8 @@ describe('MqttMaster', function() {
             turn_on: function() { return 1; }
           }
         }
-      }
+      },
+      toJSON: spy()
     };
     mm = new MqttMaster('mqtt://test.mosquitto.org', mcp);
     stub(console, 'log');
@@ -124,7 +125,7 @@ describe('MqttMaster', function() {
     });
 
     it('on @client message emits the topic on the object', function() {
-      expect(mm.emit).to.be.calledWith('commands', {});
+      expect(mm.emit).to.be.calledWith('commands', null);
     });
 
     it('calls  #subscribeMCP', function() {
@@ -152,21 +153,30 @@ describe('MqttMaster', function() {
     });
 
     it('sets topics for all robots', function() {
-      expect(mm.topics.rosie).to.be.eql('/api/robots/rosie');
-      expect(mm.topics.thelma).to.be.eql('/api/robots/thelma');
+      expect(mm.topics['/api/robots/rosie']).to.be.eql('/api/robots/rosie');
+      expect(mm.topics['/api/robots/thelma']).to.be.eql('/api/robots/thelma');
     });
 
     it('triggers the callback', function() {
       expect(callback).to.be.calledWith(
         '/api/robots/rosie',
-        'rosie',
         mcp.robots.rosie
       );
       expect(callback).to.be.calledWith(
         '/api/robots/thelma',
-        'thelma',
         mcp.robots.thelma
       );
+    });
+
+    context('with prefix', function() {
+      it('prepends the prefix to the topic', function() {
+        mm.prefix = '/123456';
+        mm._subscribeItems('/api/robots/', mcp.robots, callback);
+        expect(callback).to.be.calledWith(
+          '/123456/api/robots/rosie',
+          mcp.robots.rosie
+        );
+      });
     });
   });
 
@@ -181,11 +191,15 @@ describe('MqttMaster', function() {
 
       mm.client = client;
 
+      stub(mm, '_stringify');
+      spy(mm, 'subscribe');
+      spy(mm, 'publish');
+
       stub(mm, 'on');
       mm.on.yields();
 
       stub(mm, '_subscribeItems');
-      mm._subscribeItems.yields('/api/robots', 'robots', mcp.robots);
+      mm._subscribeItems.yields('/api', mcp);
 
       mm.subscribeMCP();
     });
@@ -197,28 +211,22 @@ describe('MqttMaster', function() {
 
     it('calls #_subscribeItems', function() {
       expect(mm._subscribeItems).to.be.calledWith(
-        '/api/',
-        { robots: mcp.robots }
+        '/api',
+        { '': mcp }
       );
+    });
+
+    it('adds a listener for root "/"', function() {
+      expect(mm.on).to.be.calledWith('/api');
+      expect(mm.on).to.be.calledWith('/api/');
     });
 
     it('adds a listener /api/robots', function() {
       expect(mm.on).to.be.calledWith('/api/robots');
     });
 
-    it('subscribes mm.client to /api/robots topic', function() {
-      expect(client.subscribe).to.be.calledWith('/api/robots');
-    });
-
-    it('publishes to /api/robots topic', function() {
-      expect(client.publish).to.be.calledWith('/api/robots');
-      expect(client.publish).to.be.calledWith(
-        '/api/robots',
-        JSON.stringify({
-          robots: ['rosie', 'thelma'],
-          sender: null
-        })
-      );
+    it('subscribes mm.client to root / and /api/robots topic', function() {
+      expect(mm.subscribe).to.be.calledWith(['/api', '/api/', '/api/robots']);
     });
   });
 
@@ -237,7 +245,7 @@ describe('MqttMaster', function() {
       mm.on.yields();
 
       stub(mm, '_subscribeItems');
-      mm._subscribeItems.yields('/api/robots/rosie', 'rosie', mcp.robots.rosie);
+      mm._subscribeItems.yields('/api/robots/rosie', mcp.robots.rosie);
 
       stub(mm, '_addDefaultListeners');
 
@@ -258,7 +266,6 @@ describe('MqttMaster', function() {
       expect(mm._addDefaultListeners).to.be.calledOnce;
       expect(mm._addDefaultListeners).to.be.calledWith(
         '/api/robots/rosie',
-        'rosie',
         mcp.robots.rosie
       );
     });
@@ -340,7 +347,7 @@ describe('MqttMaster', function() {
       stub(rosie.commands, 'turn_on');
       rosie.commands.turn_on.returns(128);
 
-      mm._addDefaultListeners('/api/robots/rosie', 'rosie', rosie);
+      mm._addDefaultListeners('/api/robots/rosie', rosie);
     });
 
     afterEach(function() {
@@ -465,27 +472,6 @@ describe('MqttMaster', function() {
 
     it('subscribes to all robots topics', function() {
       expect(client.subscribe).to.be.calledWith(topics);
-    });
-
-
-    context('robot with prefix', function() {
-      beforeEach(function() {
-        mm.prefix = '/123456';
-
-        mm._addDefaultListeners('/api/robots/rosie', 'rosie', rosie);
-      });
-
-      it('adds to the beggining of the listener topic', function() {
-        expect(mm.on).to.be.calledWith(
-          '/123456/api/robots/rosie/message'
-        );
-      });
-
-      it('adds to the beggining of the published topic', function() {
-        expect(client.publish).to.be.calledWith(
-          '/123456/api/robots/rosie/message'
-        );
-      });
     });
   });
 });
