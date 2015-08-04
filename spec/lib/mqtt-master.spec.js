@@ -27,7 +27,8 @@ describe('MqttMaster', function() {
             'turned-on',
             'turned-off'
           ],
-          on: function() {}
+          on: function() {},
+          toJSON: function() { return { devices: '1234' }; }
         },
         thelma: {
           devices: {
@@ -40,10 +41,11 @@ describe('MqttMaster', function() {
           },
           commands: {
             turn_on: function() { return 1; }
-          }
+          },
+          toJSON: function() { return { devices: '5678' }; }
         }
       },
-      toJSON: spy()
+      toJSON: function() { return { details: '1234' }; }
     };
     mm = new MqttMaster('mqtt://test.mosquitto.org', mcp);
     stub(console, 'log');
@@ -68,6 +70,14 @@ describe('MqttMaster', function() {
 
     it('sets @nsp', function() {
       expect(mm.topics).to.be.eql({});
+    });
+
+    it('sets @prefix', function() {
+      expect(mm.prefix).to.be.eql('');
+    });
+
+    it('sets @sender', function() {
+      expect(mm.topics).not.to.be.null();
     });
   });
 
@@ -201,6 +211,8 @@ describe('MqttMaster', function() {
       stub(mm, '_subscribeItems');
       mm._subscribeItems.yields('/api', mcp);
 
+      stub(mm, '_addDefaultListeners');
+
       mm.subscribeMCP();
     });
 
@@ -228,10 +240,18 @@ describe('MqttMaster', function() {
     it('subscribes mm.client to root / and /api/robots topic', function() {
       expect(mm.subscribe).to.be.calledWith(['/api', '/api/', '/api/robots']);
     });
+
+    it('calls #_addDefaultListeners', function() {
+      expect(mm._addDefaultListeners).to.be.calledOnce;
+      expect(mm._addDefaultListeners).to.be.calledWith(
+        '/api',
+        mcp
+      );
+    });
   });
 
   describe('#subscribeRobots', function() {
-    var client;
+    var client, localSender;
 
     beforeEach(function() {
       client = {
@@ -240,6 +260,8 @@ describe('MqttMaster', function() {
       };
 
       mm.client = client;
+
+      localSender = mm.sender;
 
       stub(mm, 'on');
       mm.on.yields();
@@ -286,9 +308,20 @@ describe('MqttMaster', function() {
     it('call @client#publish for robot and devices', function() {
       var topicPrefix = '/api/robots/rosie';
 
-      var devices = JSON.stringify({ devices: ['led'], sender: null });
+      var details = JSON.stringify({ devices: '1234', sender: localSender });
 
-      expect(client.publish).to.be.calledWith(topicPrefix, devices);
+      var devices = {
+        led: {
+          commands: { },
+          events: [ 'analogRead' ]
+        },
+        sender: localSender
+      };
+
+
+      devices = JSON.stringify(devices);
+
+      expect(client.publish).to.be.calledWith(topicPrefix, details);
       expect(client.publish).to.be
         .calledWith(topicPrefix + '/devices', devices);
     });
@@ -313,14 +346,14 @@ describe('MqttMaster', function() {
   });
 
   describe('#_addDefaultListeners', function() {
-    var client, payload, rosie, topics;
+    var client, payload, rosie, topics, localSender;
 
     topics = [
-      '/api/robots/rosie/message',
+      '/api/robots/rosie/loopback',
       '/api/robots/rosie/commands',
       '/api/robots/rosie/events',
       '/api/robots/rosie/command',
-      '/api/robots/rosie/turn_on'
+      '/api/robots/rosie/commands/turn_on'
     ];
 
     beforeEach(function() {
@@ -336,13 +369,15 @@ describe('MqttMaster', function() {
         publish: stub()
       };
 
+      localSender = mm.sender;
+
       mm.client = client;
 
       stub(mm, 'on');
       mm.on.yields(payload);
 
       stub(rosie, 'on');
-      rosie.on.yields('value1', 'value2');
+      rosie.on.yields({ val: 'value1' });
 
       stub(rosie.commands, 'turn_on');
       rosie.commands.turn_on.returns(128);
@@ -355,20 +390,20 @@ describe('MqttMaster', function() {
       rosie.on.restore();
     });
 
-    it('adds a listener for /api/robots/rosie/message', function() {
+    it('adds a listener for /api/robots/rosie/loopback', function() {
       expect(mm.on).to.be.calledWith(
-        '/api/robots/rosie/message'
+        '/api/robots/rosie/loopback'
       );
     });
 
-    it('publishes to topic /api/robots/rosie/message', function() {
+    it('publishes to topic /api/robots/rosie/loopback', function() {
       var data = JSON.stringify({
         data: { command: 'turn_on', args: ['param1', 'param2'] },
-        sender: null
+        sender: localSender
       });
 
       expect(client.publish).to.be.calledWith(
-        '/api/robots/rosie/message',
+        '/api/robots/rosie/loopback',
         data
       );
     });
@@ -380,7 +415,7 @@ describe('MqttMaster', function() {
     it('publishes to topic /api/robots/rosie/commands', function() {
       var data = JSON.stringify({
         commands: ['turn_on'],
-        sender: null
+        sender: localSender
       });
 
       expect(client.publish).to.be.calledWith(
@@ -396,7 +431,7 @@ describe('MqttMaster', function() {
     it('publishes to topic /api/robots/rosie/events', function() {
       var data = JSON.stringify({
         events: ['turned-on', 'turned-off'],
-        sender: null
+        sender: localSender
       });
 
       expect(client.publish).to.be.calledWith(
@@ -420,14 +455,14 @@ describe('MqttMaster', function() {
         '/api/robots/rosie/command',
         JSON.stringify({
           command: 'turn_on',
-          returned: 128,
-          sender: null
+          data: 128,
+          sender: localSender
         })
       );
     });
 
-    it('adds a listener for /api/robots/rosie/turn_on', function() {
-      expect(mm.on).to.be.calledWith('/api/robots/rosie/turn_on');
+    it('adds a listener for /api/robots/rosie/commands/turn_on', function() {
+      expect(mm.on).to.be.calledWith('/api/robots/rosie/commands/turn_on');
     });
 
     it('calls the turn_on command', function() {
@@ -436,11 +471,11 @@ describe('MqttMaster', function() {
         .to.be.calledWith(params.args[0], params.args[1]);
     });
 
-    it('publishes to topic /api/robots/rosie/turn_on', function() {
+    it('publishes to topic /api/robots/rosie/commands/turn_on', function() {
       expect(client.publish).to.be.calledWith(
-        '/api/robots/rosie/turn_on',
+        '/api/robots/rosie/commands/turn_on',
         JSON.stringify(
-          { returned: 128, sender: null }
+          { data: 128, sender: localSender }
         )
       );
     });
@@ -452,21 +487,15 @@ describe('MqttMaster', function() {
 
     it('publishes to topic /api/robots/rosie/turn-on', function() {
       expect(client.publish).to.be.calledWith(
-        '/api/robots/rosie/turned-on',
-        JSON.stringify({
-          arguments: { 0: 'value1', 1: 'value2' },
-          sender: null
-        })
+        '/api/robots/rosie/events/turned-on',
+        JSON.stringify({ data: { val: 'value1' }, sender: localSender })
       );
     });
 
     it('publishes to topic /api/robots/rosie/turn-off', function() {
       expect(client.publish).to.be.calledWith(
-        '/api/robots/rosie/turned-off',
-        JSON.stringify({
-          arguments: { 0: 'value1', 1: 'value2' },
-          sender: null
-        })
+        '/api/robots/rosie/events/turned-off',
+        JSON.stringify({ data: { val: 'value1' }, sender: localSender, })
       );
     });
 
