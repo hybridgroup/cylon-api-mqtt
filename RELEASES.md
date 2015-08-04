@@ -1,5 +1,7 @@
 ## Release History
 
+0.2.0 - Further CPPP-IO Compliance, MCP data, MCP commands/events
+
 0.1.4 - Remove express dependency
 
 0.1.3 - Fix incorrect topic route in examples
