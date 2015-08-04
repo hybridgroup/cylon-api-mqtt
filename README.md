@@ -97,12 +97,12 @@ var params = {
 var payload = JSON.stringify(params);
 
 // get response messages from the robot-level command `toggle`
-client.subscribe('/api/robots/cybot/toggle');
+client.subscribe('/api/robots/cybot/commands/toggle');
 
 setInterval(function() {
   // call robot-level command `toggle`
   client.publish(
-    '/api/robots/cybot/toggle',
+    '/api/robots/cybot/commands/toggle',
     payload);
 }, 2000);
 ```
