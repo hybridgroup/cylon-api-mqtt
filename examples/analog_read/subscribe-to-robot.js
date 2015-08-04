@@ -22,4 +22,4 @@ client.on('message', function(topic, payload) {
 });
 
 // get 'analogRead' events for 'sensor' device of robot 'cybot'
-client.subscribe('/api/robots/cybot/devices/sensor/analogRead');
+client.subscribe('/api/robots/cybot/devices/sensor/events/analogRead');
